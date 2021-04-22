@@ -1,0 +1,68 @@
+package main
+
+import "errors"
+
+type Person struct {
+	name string
+	// ...
+}
+
+var ErrNoRows = errors.New("<QuerySeter> no row found")
+
+func main() { // {{{
+	// 不用包装，根据不同的业务场景来选择不同的方式：
+	// 1 可以选择直接降级，返回nil,调用出可以判断结果是否为nil来返回失败, 例如：xxx不存在等失败
+	// 2 可以直接向上抛, 调用出判断错误，来返回失败
+	// 举例： 假设main是api接口方法，方法返回json数据
+
+	// 方案1
+	id := 123123123
+	// 调用dao 获取数据
+	person, err := getPerson(id)
+
+	if err != nil {
+		// 记录日志
+		// 返回通用sql查询错误
+	} // end if
+
+	if person == nil {
+		// 返回xxx不存在错误
+	}
+
+	// 方案2
+	// 调用dao 获取数据
+	person, err2 := getPerson2(id)
+	if err2 == ErrNoRows {
+		// 返回xxx不存在错误
+	}
+	if err != nil {
+		// 记录日志
+		// 返回通用sql查询错误
+	} // end if
+
+	// 个人更喜欢第一种方案,
+	// 因为如果第二个方案，两个if的顺序写反了，很容易出现查不到数据会记录日志并返回sql错误的错误码，导致误认为mysql除了问题
+} // }}}
+
+// dao 获取数据
+func getPerson(id int64) (*Person, error) { // {{{
+	// 调用models 获取person
+	person, err := ModelGetPerson(id)
+	if err == ErrNoRows {
+		return nil, nil
+	}
+	return person, nil
+} // }}}
+
+// dao 获取数据
+func getPerson2(id int64) (*Person, error) { // {{{
+	// 调用models 获取person
+	person, err := ModelGetPerson(id)
+	return person, err
+} // }}}
+
+// models 获取person
+func ModelGetPerson(id int64) (*Person, error) { // {{{
+	// 假设返回了err
+	return nil, err
+} // }}}
